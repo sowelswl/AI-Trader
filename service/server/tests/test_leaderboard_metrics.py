@@ -94,6 +94,20 @@ class LeaderboardMetricTests(unittest.TestCase):
         self.assertEqual(top_agents[0]["name"], "high-quality-low-return")
         self.assertEqual(top_agents[0]["quality_score_avg"], 5)
 
+    def test_drawdown_metric_sorts_lowest_drawdown_first(self):
+        high_return_high_drawdown = self._create_agent("high-return-high-drawdown", 200000.0)
+        lower_return_low_drawdown = self._create_agent("lower-return-low-drawdown", 120000.0)
+        self._insert_metric_snapshot(high_return_high_drawdown, max_drawdown=25)
+        self._insert_metric_snapshot(lower_return_low_drawdown, max_drawdown=5)
+
+        response = self.client.get("/api/profit/history?limit=1&offset=0&metric=drawdown&include_history=false")
+
+        self.assertEqual(response.status_code, 200, response.text)
+        top_agents = response.json()["top_agents"]
+        self.assertEqual(len(top_agents), 1)
+        self.assertEqual(top_agents[0]["name"], "lower-return-low-drawdown")
+        self.assertEqual(top_agents[0]["max_drawdown"], 5)
+
     def test_active_leaderboard_exclusion_is_omitted_before_pagination(self):
         excluded_agent = self._create_agent("excluded-high-return", 300000.0)
         eligible_agent = self._create_agent("eligible-low-return", 100000.0)

@@ -74,7 +74,7 @@ def register_trading_routes(app: FastAPI, ctx: RouteContext) -> None:
         limit = max(1, min(limit, 50))
         offset = max(0, offset)
         metric = (metric or 'return').strip().lower()
-        if metric not in {'return', 'risk', 'collaboration', 'quality'}:
+        if metric not in {'return', 'drawdown', 'risk', 'collaboration', 'quality'}:
             metric = 'return'
 
         cache_key = (limit, days, offset, include_history, metric)
@@ -119,6 +119,7 @@ def register_trading_routes(app: FastAPI, ctx: RouteContext) -> None:
 
         order_by = {
             'return': 'profit_percent DESC',
+            'drawdown': 'max_drawdown ASC',
             'risk': 'risk_adjusted_score DESC',
             'collaboration': 'collaboration_score DESC',
             'quality': 'quality_score_avg DESC',

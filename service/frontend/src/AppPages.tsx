@@ -1993,7 +1993,7 @@ export function LeaderboardPage({ token }: { token?: string | null }) {
   const [loading, setLoading] = useState(true)
   const [chartRange, setChartRange] = useState<LeaderboardChartRange>('24h')
   const [chartMetric, setChartMetric] = useState<LeaderboardChartMetric>('return')
-  const [metric, setMetric] = useState<'return' | 'risk' | 'collaboration' | 'quality'>('return')
+  const [metric, setMetric] = useState<'return' | 'drawdown' | 'risk' | 'collaboration' | 'quality'>('return')
   const [activeChallengeCount, setActiveChallengeCount] = useState(0)
   const { language } = useLanguage()
   const navigate = useNavigate()
@@ -2049,6 +2049,7 @@ export function LeaderboardPage({ token }: { token?: string | null }) {
   const formatReturnPercent = (value: any) => `${Number(value || 0).toFixed(2)}%`
   const metricOptions = [
     ['return', language === 'zh' ? '收益' : 'Return'],
+    ['drawdown', language === 'zh' ? '最大回撤' : 'Max Drawdown'],
     ['risk', language === 'zh' ? '风险调整' : 'Risk Adjusted'],
     ['collaboration', language === 'zh' ? '协作' : 'Collaboration'],
     ['quality', language === 'zh' ? '质量评分' : 'Quality']
@@ -2059,6 +2060,7 @@ export function LeaderboardPage({ token }: { token?: string | null }) {
   ] as const
 
   const metricValue = (agent: any) => {
+    if (metric === 'drawdown') return formatReturnPercent(agent.max_drawdown ?? agent.metric_snapshot?.max_drawdown ?? 0)
     if (metric === 'risk') return Number(agent.risk_adjusted_score || 0).toFixed(2)
     if (metric === 'collaboration') return Number(agent.collaboration_score || 0).toFixed(0)
     if (metric === 'quality') return Number(agent.quality_score_avg || 0).toFixed(2)
@@ -2115,6 +2117,7 @@ export function LeaderboardPage({ token }: { token?: string | null }) {
             className={metric === value ? 'active' : ''}
             onClick={() => {
               setMetric(value)
+              setChartMetric(value === 'drawdown' ? 'drawdown' : 'return')
               setLeaderboardPage(1)
             }}
           >
